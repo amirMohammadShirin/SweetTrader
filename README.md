@@ -1,17 +1,15 @@
 # SweetTrader Telegram Bot 🤖📈
 
-یک ربات تلگرام حرفه‌ای برای معاملات فارکس با استفاده از MetaTrader5 و هوش مصنوعی N8N
-
 A professional Telegram bot for forex trading with MetaTrader5 integration and N8N AI support.
 
 ## Features ✨
 
-- 🔗 **MetaTrader5 Integration**: اتصال مستقیم به حساب MetaTrader5
-- 🤖 **AI Analysis**: تحلیل هوشمند بازار با استفاده از OpenAI و N8N
-- 📊 **Technical Indicators**: محاسبه شاخص‌های فنی (RSI, MACD, Bollinger Bands, SMA)
-- 💹 **Trading Commands**: دستورات کامل برای خرید، فروش و مدیریت موقعیت‌ها
-- 🇮🇷 **Persian Language**: رابط کاربری فارسی
-- 🔔 **Real-time Signals**: دریافت سیگنال‌های معاملاتی در لحظه
+- 🔗 **MetaTrader5 Integration**: Direct connection to MetaTrader5 account
+- 🤖 **AI Analysis**: Intelligent market analysis using OpenAI and N8N
+- 📊 **Technical Indicators**: Calculate technical indicators (RSI, MACD, Bollinger Bands, SMA)
+- 💹 **Trading Commands**: Complete commands for buying, selling, and managing positions
+- 🌐 **English Interface**: User-friendly English interface
+- 🔔 **Real-time Signals**: Get trading signals in real-time
 
 ## Requirements 📋
 
@@ -108,16 +106,16 @@ The bot will:
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/start` | شروع ربات | `/start` |
-| `/help` | نمایش راهنما | `/help` |
-| `/account` | اطلاعات کامل حساب | `/account` |
-| `/balance` | موجودی حساب | `/balance` |
-| `/positions` | موقعیت‌های باز | `/positions` |
-| `/analyze <SYMBOL>` | تحلیل نماد | `/analyze EURUSD` |
-| `/signal <SYMBOL>` | دریافت سیگنال | `/signal GBPUSD` |
-| `/buy <SYMBOL> <VOLUME>` | خرید | `/buy EURUSD 0.01` |
-| `/sell <SYMBOL> <VOLUME>` | فروش | `/sell EURUSD 0.01` |
-| `/close <TICKET>` | بستن موقعیت | `/close 123456` |
+| `/start` | Start the bot | `/start` |
+| `/help` | Show help guide | `/help` |
+| `/account` | Full account information | `/account` |
+| `/balance` | Account balance | `/balance` |
+| `/positions` | Open positions | `/positions` |
+| `/analyze <SYMBOL>` | Analyze symbol | `/analyze EURUSD` |
+| `/signal <SYMBOL>` | Get trading signal | `/signal GBPUSD` |
+| `/buy <SYMBOL> <VOLUME>` | Place buy order | `/buy EURUSD 0.01` |
+| `/sell <SYMBOL> <VOLUME>` | Place sell order | `/sell EURUSD 0.01` |
+| `/close <TICKET>` | Close position | `/close 123456` |
 
 ### Advanced Trading Commands
 
@@ -148,7 +146,7 @@ To use N8N for AI analysis:
 
 ```json
 {
-  "analysis": "Your AI analysis text in Persian",
+  "analysis": "Your AI analysis text in English",
   "signal": {
     "action": "BUY",
     "confidence": 85,
@@ -168,7 +166,7 @@ SweetTrader/
 ├── mt5_handler.py      # MetaTrader5 integration
 ├── n8n_handler.py      # N8N webhook integration
 ├── ai_analyzer.py      # AI analysis and indicators
-├── utils.py            # Utility functions and Persian texts
+├── utils.py            # Utility functions and bot text messages
 ├── requirements.txt    # Python dependencies
 ├── .env.example        # Environment variables template
 ├── .gitignore          # Git ignore file
