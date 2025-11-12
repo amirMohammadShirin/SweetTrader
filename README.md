@@ -79,9 +79,13 @@ ADMIN_USER_ID=123456789  # Your Telegram user ID
 
 ### 6. Get your Telegram Bot Token
 
-1. Open Telegram and search for [@BotFather](https://t.me/BotFather)
-2. Send `/newbot` and follow the instructions
-3. Copy the bot token and paste it in `.env`
+The bot has been created: **[@SweetTraderBot](https://t.me/SweetTraderBot)**
+
+1. Copy the bot token provided by BotFather
+2. Paste it in your `.env` file as `TELEGRAM_BOT_TOKEN`
+3. ⚠️ **Keep your token secure!** Never commit it to git
+
+For detailed setup instructions, see [SETUP_GUIDE.md](SETUP_GUIDE.md)
 
 ### 7. Get your Telegram User ID
 

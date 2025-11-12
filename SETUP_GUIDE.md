@@ -20,36 +20,41 @@ ADMIN_USER_ID=your_telegram_user_id
 
 ## 1. 🤖 Telegram Bot Token (REQUIRED)
 
-### Step-by-Step:
+### ✅ Bot Already Created!
+
+The Telegram bot has been created: **[@SweetTraderBot](https://t.me/SweetTraderBot)**
+
+### Setup Instructions:
+
+1. **Copy the bot token** (provided by BotFather)
+   - ⚠️ **Keep this token secure!** Never commit it to git or share it publicly
+   - The token looks like: `8454476033:AAG3tOPNIzGWHsc7B5H5zgCQIR2o6JUPltU`
+
+2. **Create your `.env` file**:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Add the token to your `.env` file**:
+   ```env
+   TELEGRAM_BOT_TOKEN=8454476033:AAG3tOPNIzGWHsc7B5H5zgCQIR2o6JUPltU
+   ```
+
+4. **Optional: Customize your bot** (via @BotFather):
+   - `/setdescription` - Set what your bot does
+   - `/setuserpic` - Set a profile picture
+   - `/setcommands` - Set command descriptions
+   - `/setabouttext` - Set about section
+
+### Creating a New Bot (Alternative):
+
+If you want to create your own bot instead:
 
 1. **Open Telegram** and search for **[@BotFather](https://t.me/BotFather)**
-   - Or click this link: https://t.me/BotFather
-
-2. **Start a chat** with BotFather and send:
-   ```
-   /start
-   ```
-
-3. **Create a new bot** by sending:
-   ```
-   /newbot
-   ```
-
-4. **Choose a name** for your bot (e.g., "My Trading Bot")
-   - This is the display name users will see
-
-5. **Choose a username** for your bot (must end with `bot`)
-   - Example: `my_trading_bot` or `sweettrader_bot`
-   - This must be unique
-
-6. **Copy the token** that BotFather gives you
-   - It will look like: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`
-   - ⚠️ **Keep this secret!** Don't share it with anyone
-
-7. **Paste it in your `.env` file**:
-   ```env
-   TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
-   ```
+2. **Start a chat** with BotFather and send: `/start`
+3. **Create a new bot** by sending: `/newbot`
+4. **Choose a name** and **username** for your bot
+5. **Copy the token** and add it to your `.env` file
 
 ### Optional: Customize Your Bot
 
