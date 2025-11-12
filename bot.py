@@ -9,7 +9,7 @@ from mt5_handler import MT5Handler
 from n8n_handler import N8NHandler
 from ai_analyzer import AIAnalyzer
 from utils import (
-    PERSIAN_TEXTS, format_account_info, format_positions, 
+    BOT_TEXTS, format_account_info, format_positions, 
     format_signal, format_analysis
 )
 
@@ -30,49 +30,49 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not mt5.connected:
         if not mt5.connect():
             await update.message.reply_text(
-                PERSIAN_TEXTS['not_connected'] + "\n" + 
-                PERSIAN_TEXTS['error'] + "لطفا تنظیمات MT5 را بررسی کنید."
+                BOT_TEXTS['not_connected'] + "\n" + 
+                BOT_TEXTS['error'] + "Please check your MT5 settings."
             )
             return
     
-    await update.message.reply_text(PERSIAN_TEXTS['welcome'])
+    await update.message.reply_text(BOT_TEXTS['welcome'])
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /help command"""
-    await update.message.reply_text(PERSIAN_TEXTS['help'])
+    await update.message.reply_text(BOT_TEXTS['help'])
 
 async def account(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /account command"""
     if not mt5.connected:
         if not mt5.connect():
-            await update.message.reply_text(PERSIAN_TEXTS['not_connected'])
+            await update.message.reply_text(BOT_TEXTS['not_connected'])
             return
     
     account_info = mt5.get_account_info()
     if account_info:
         await update.message.reply_text(format_account_info(account_info))
     else:
-        await update.message.reply_text(PERSIAN_TEXTS['error'] + "نمی‌توان اطلاعات حساب را دریافت کرد.")
+        await update.message.reply_text(BOT_TEXTS['error'] + "Unable to retrieve account information.")
 
 async def balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /balance command"""
     if not mt5.connected:
         if not mt5.connect():
-            await update.message.reply_text(PERSIAN_TEXTS['not_connected'])
+            await update.message.reply_text(BOT_TEXTS['not_connected'])
             return
     
     account_info = mt5.get_account_info()
     if account_info:
-        balance_text = f"{PERSIAN_TEXTS['balance']}{account_info.get('balance', 0):.2f} {account_info.get('currency', 'USD')}"
+        balance_text = f"{BOT_TEXTS['balance']}{account_info.get('balance', 0):.2f} {account_info.get('currency', 'USD')}"
         await update.message.reply_text(balance_text)
     else:
-        await update.message.reply_text(PERSIAN_TEXTS['error'] + "نمی‌توان موجودی را دریافت کرد.")
+        await update.message.reply_text(BOT_TEXTS['error'] + "Unable to retrieve balance.")
 
 async def positions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /positions command"""
     if not mt5.connected:
         if not mt5.connect():
-            await update.message.reply_text(PERSIAN_TEXTS['not_connected'])
+            await update.message.reply_text(BOT_TEXTS['not_connected'])
             return
     
     positions_list = mt5.get_positions()
@@ -82,29 +82,29 @@ async def analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /analyze command"""
     if not mt5.connected:
         if not mt5.connect():
-            await update.message.reply_text(PERSIAN_TEXTS['not_connected'])
+            await update.message.reply_text(BOT_TEXTS['not_connected'])
             return
     
     if not context.args or len(context.args) < 1:
-        await update.message.reply_text("❌ لطفا نماد را وارد کنید. مثال: /analyze EURUSD")
+        await update.message.reply_text("❌ Please enter a symbol. Example: /analyze EURUSD")
         return
     
     symbol = context.args[0].upper()
     
     # Send analyzing message
-    analyzing_msg = await update.message.reply_text(PERSIAN_TEXTS['analyzing'] + f" {symbol}...")
+    analyzing_msg = await update.message.reply_text(BOT_TEXTS['analyzing'] + f" {symbol}...")
     
     try:
         # Get market data
         symbol_info = mt5.get_symbol_info(symbol)
         if not symbol_info:
-            await analyzing_msg.edit_text(f"❌ نماد {symbol} یافت نشد.")
+            await analyzing_msg.edit_text(f"❌ Symbol {symbol} not found.")
             return
         
         # Get historical data
         rates = mt5.get_rates(symbol, count=100)
         if rates is None or len(rates) == 0:
-            await analyzing_msg.edit_text(f"❌ نمی‌توان داده‌های قیمتی {symbol} را دریافت کرد.")
+            await analyzing_msg.edit_text(f"❌ Unable to retrieve price data for {symbol}.")
             return
         
         # Calculate indicators
@@ -132,27 +132,27 @@ async def analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if analysis_text:
             response = format_analysis(analysis_text, indicators)
         else:
-            response = f"📊 تحلیل {symbol}:\n\n"
+            response = f"📊 Analysis for {symbol}:\n\n"
             if indicators:
                 response += f"RSI: {indicators.get('rsi', 'N/A')}\n"
                 response += f"MACD: {indicators.get('macd', 'N/A')}\n"
-                response += f"قیمت فعلی: {market_data['current_price']:.5f}\n"
+                response += f"Current Price: {market_data['current_price']:.5f}\n"
         
         await analyzing_msg.edit_text(response)
         
     except Exception as e:
         logger.error(f"Error in analyze command: {e}")
-        await analyzing_msg.edit_text(PERSIAN_TEXTS['error'] + str(e))
+        await analyzing_msg.edit_text(BOT_TEXTS['error'] + str(e))
 
 async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /signal command"""
     if not mt5.connected:
         if not mt5.connect():
-            await update.message.reply_text(PERSIAN_TEXTS['not_connected'])
+            await update.message.reply_text(BOT_TEXTS['not_connected'])
             return
     
     if not context.args or len(context.args) < 1:
-        await update.message.reply_text("❌ لطفا نماد را وارد کنید. مثال: /signal EURUSD")
+        await update.message.reply_text("❌ Please enter a symbol. Example: /signal EURUSD")
         return
     
     symbol = context.args[0].upper()
@@ -161,13 +161,13 @@ async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Get market data
         symbol_info = mt5.get_symbol_info(symbol)
         if not symbol_info:
-            await update.message.reply_text(f"❌ نماد {symbol} یافت نشد.")
+            await update.message.reply_text(f"❌ Symbol {symbol} not found.")
             return
         
         # Get historical data
         rates = mt5.get_rates(symbol, count=100)
         if rates is None or len(rates) == 0:
-            await update.message.reply_text(f"❌ نمی‌توان داده‌های قیمتی {symbol} را دریافت کرد.")
+            await update.message.reply_text(f"❌ Unable to retrieve price data for {symbol}.")
             return
         
         # Calculate indicators
@@ -195,28 +195,28 @@ async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if signal_data:
             await update.message.reply_text(format_signal(signal_data, symbol))
         else:
-            await update.message.reply_text(f"❌ نمی‌توان سیگنال برای {symbol} دریافت کرد.")
+            await update.message.reply_text(f"❌ Unable to get signal for {symbol}.")
             
     except Exception as e:
         logger.error(f"Error in signal command: {e}")
-        await update.message.reply_text(PERSIAN_TEXTS['error'] + str(e))
+        await update.message.reply_text(BOT_TEXTS['error'] + str(e))
 
 async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /buy command"""
     if not mt5.connected:
         if not mt5.connect():
-            await update.message.reply_text(PERSIAN_TEXTS['not_connected'])
+            await update.message.reply_text(BOT_TEXTS['not_connected'])
             return
     
     if not context.args or len(context.args) < 2:
-        await update.message.reply_text("❌ لطفا نماد و حجم را وارد کنید. مثال: /buy EURUSD 0.01")
+        await update.message.reply_text("❌ Please enter symbol and volume. Example: /buy EURUSD 0.01")
         return
     
     symbol = context.args[0].upper()
     try:
         volume = float(context.args[1])
     except ValueError:
-        await update.message.reply_text("❌ حجم باید یک عدد باشد.")
+        await update.message.reply_text("❌ Volume must be a number.")
         return
     
     # Optional SL and TP
@@ -227,31 +227,31 @@ async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if result and result.get('success'):
         await update.message.reply_text(
-            f"{PERSIAN_TEXTS['success']} سفارش خرید ثبت شد.\n"
-            f"🎫 تیکت: {result.get('order')}\n"
-            f"📊 حجم: {result.get('volume')}\n"
-            f"💰 قیمت: {result.get('price')}"
+            f"{BOT_TEXTS['success']} Buy order placed.\n"
+            f"🎫 Ticket: {result.get('order')}\n"
+            f"📊 Volume: {result.get('volume')}\n"
+            f"💰 Price: {result.get('price')}"
         )
     else:
-        error_msg = result.get('error', 'خطای نامشخص') if result else 'خطای نامشخص'
-        await update.message.reply_text(f"{PERSIAN_TEXTS['error']}{error_msg}")
+        error_msg = result.get('error', 'Unknown error') if result else 'Unknown error'
+        await update.message.reply_text(f"{BOT_TEXTS['error']}{error_msg}")
 
 async def sell(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /sell command"""
     if not mt5.connected:
         if not mt5.connect():
-            await update.message.reply_text(PERSIAN_TEXTS['not_connected'])
+            await update.message.reply_text(BOT_TEXTS['not_connected'])
             return
     
     if not context.args or len(context.args) < 2:
-        await update.message.reply_text("❌ لطفا نماد و حجم را وارد کنید. مثال: /sell EURUSD 0.01")
+        await update.message.reply_text("❌ Please enter symbol and volume. Example: /sell EURUSD 0.01")
         return
     
     symbol = context.args[0].upper()
     try:
         volume = float(context.args[1])
     except ValueError:
-        await update.message.reply_text("❌ حجم باید یک عدد باشد.")
+        await update.message.reply_text("❌ Volume must be a number.")
         return
     
     # Optional SL and TP
@@ -262,43 +262,43 @@ async def sell(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if result and result.get('success'):
         await update.message.reply_text(
-            f"{PERSIAN_TEXTS['success']} سفارش فروش ثبت شد.\n"
-            f"🎫 تیکت: {result.get('order')}\n"
-            f"📊 حجم: {result.get('volume')}\n"
-            f"💰 قیمت: {result.get('price')}"
+            f"{BOT_TEXTS['success']} Sell order placed.\n"
+            f"🎫 Ticket: {result.get('order')}\n"
+            f"📊 Volume: {result.get('volume')}\n"
+            f"💰 Price: {result.get('price')}"
         )
     else:
-        error_msg = result.get('error', 'خطای نامشخص') if result else 'خطای نامشخص'
-        await update.message.reply_text(f"{PERSIAN_TEXTS['error']}{error_msg}")
+        error_msg = result.get('error', 'Unknown error') if result else 'Unknown error'
+        await update.message.reply_text(f"{BOT_TEXTS['error']}{error_msg}")
 
 async def close_position(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /close command"""
     if not mt5.connected:
         if not mt5.connect():
-            await update.message.reply_text(PERSIAN_TEXTS['not_connected'])
+            await update.message.reply_text(BOT_TEXTS['not_connected'])
             return
     
     if not context.args or len(context.args) < 1:
-        await update.message.reply_text("❌ لطفا شماره تیکت موقعیت را وارد کنید. مثال: /close 123456")
+        await update.message.reply_text("❌ Please enter position ticket number. Example: /close 123456")
         return
     
     try:
         ticket = int(context.args[0])
     except ValueError:
-        await update.message.reply_text("❌ شماره تیکت باید یک عدد باشد.")
+        await update.message.reply_text("❌ Ticket number must be a number.")
         return
     
     result = mt5.close_position(ticket)
     
     if result and result.get('success'):
         await update.message.reply_text(
-            f"{PERSIAN_TEXTS['success']} موقعیت بسته شد.\n"
-            f"🎫 تیکت: {result.get('order')}\n"
-            f"💰 قیمت: {result.get('price')}"
+            f"{BOT_TEXTS['success']} Position closed.\n"
+            f"🎫 Ticket: {result.get('order')}\n"
+            f"💰 Price: {result.get('price')}"
         )
     else:
-        error_msg = result.get('error', 'خطای نامشخص') if result else 'خطای نامشخص'
-        await update.message.reply_text(f"{PERSIAN_TEXTS['error']}{error_msg}")
+        error_msg = result.get('error', 'Unknown error') if result else 'Unknown error'
+        await update.message.reply_text(f"{BOT_TEXTS['error']}{error_msg}")
 
 def main():
     """Main function to run the bot"""
@@ -307,8 +307,8 @@ def main():
         Config.validate()
     except ValueError as e:
         logger.error(f"Configuration error: {e}")
-        print(f"❌ خطای تنظیمات: {e}")
-        print("لطفا فایل .env را ایجاد و تنظیمات را وارد کنید.")
+        print(f"❌ Configuration error: {e}")
+        print("Please create .env file and enter your settings.")
         return
     
     # Create application

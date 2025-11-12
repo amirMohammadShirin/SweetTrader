@@ -6,78 +6,78 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Persian translations
-PERSIAN_TEXTS = {
-    'welcome': 'خوش آمدید به ربات معاملاتی SweetTrader! 🚀\n\nاین ربات به شما کمک می‌کند تا معاملات بهتری انجام دهید.',
-    'help': '''📖 راهنمای استفاده از ربات:
+# Bot text messages
+BOT_TEXTS = {
+    'welcome': 'Welcome to SweetTrader Bot! 🚀\n\nThis bot will help you make better trading decisions.',
+    'help': '''📖 Bot Usage Guide:
 
-/start - شروع ربات
-/account - اطلاعات حساب
-/balance - موجودی حساب
-/positions - موقعیت‌های باز
-/analyze <SYMBOL> - تحلیل نماد (مثال: /analyze EURUSD)
-/signal <SYMBOL> - دریافت سیگنال معاملاتی
-/buy <SYMBOL> <VOLUME> - خرید (مثال: /buy EURUSD 0.01)
-/sell <SYMBOL> <VOLUME> - فروش
-/close <TICKET> - بستن موقعیت
-/help - نمایش این راهنما
+/start - Start the bot
+/account - Account information
+/balance - Account balance
+/positions - Open positions
+/analyze <SYMBOL> - Analyze symbol (e.g., /analyze EURUSD)
+/signal <SYMBOL> - Get trading signal
+/buy <SYMBOL> <VOLUME> - Buy order (e.g., /buy EURUSD 0.01)
+/sell <SYMBOL> <VOLUME> - Sell order
+/close <TICKET> - Close position
+/help - Show this help
 
-💡 نکته: تمام دستورات را به انگلیسی وارد کنید.''',
-    'not_connected': '❌ اتصال به MetaTrader5 برقرار نشده است.',
-    'error': '❌ خطا: ',
-    'success': '✅ موفق: ',
-    'account_info': '📊 اطلاعات حساب:',
-    'balance': '💰 موجودی: ',
-    'equity': '💵 سرمایه: ',
-    'margin': '📈 مارجین: ',
-    'free_margin': '💳 مارجین آزاد: ',
-    'profit': '💸 سود/زیان: ',
-    'no_positions': '📭 موقعیت باز وجود ندارد.',
-    'positions': '📋 موقعیت‌های باز:',
-    'analyzing': '🔍 در حال تحلیل...',
-    'signal': '📡 سیگنال معاملاتی:',
-    'buy': '🟢 خرید',
-    'sell': '🔴 فروش',
-    'hold': '⚪ نگه‌داری',
-    'confidence': 'اعتماد: ',
-    'reason': 'دلیل: ',
+💡 Note: Enter all commands in English.''',
+    'not_connected': '❌ Not connected to MetaTrader5.',
+    'error': '❌ Error: ',
+    'success': '✅ Success: ',
+    'account_info': '📊 Account Information:',
+    'balance': '💰 Balance: ',
+    'equity': '💵 Equity: ',
+    'margin': '📈 Margin: ',
+    'free_margin': '💳 Free Margin: ',
+    'profit': '💸 Profit/Loss: ',
+    'no_positions': '📭 No open positions.',
+    'positions': '📋 Open Positions:',
+    'analyzing': '🔍 Analyzing...',
+    'signal': '📡 Trading Signal:',
+    'buy': '🟢 BUY',
+    'sell': '🔴 SELL',
+    'hold': '⚪ HOLD',
+    'confidence': 'Confidence: ',
+    'reason': 'Reason: ',
 }
 
 def format_account_info(account_info: Dict) -> str:
-    """Format account information in Persian"""
+    """Format account information"""
     if not account_info:
-        return PERSIAN_TEXTS['not_connected']
+        return BOT_TEXTS['not_connected']
     
-    text = f"{PERSIAN_TEXTS['account_info']}\n\n"
-    text += f"{PERSIAN_TEXTS['balance']}{account_info.get('balance', 0):.2f} {account_info.get('currency', 'USD')}\n"
-    text += f"{PERSIAN_TEXTS['equity']}{account_info.get('equity', 0):.2f} {account_info.get('currency', 'USD')}\n"
-    text += f"{PERSIAN_TEXTS['margin']}{account_info.get('margin', 0):.2f} {account_info.get('currency', 'USD')}\n"
-    text += f"{PERSIAN_TEXTS['free_margin']}{account_info.get('free_margin', 0):.2f} {account_info.get('currency', 'USD')}\n"
+    text = f"{BOT_TEXTS['account_info']}\n\n"
+    text += f"{BOT_TEXTS['balance']}{account_info.get('balance', 0):.2f} {account_info.get('currency', 'USD')}\n"
+    text += f"{BOT_TEXTS['equity']}{account_info.get('equity', 0):.2f} {account_info.get('currency', 'USD')}\n"
+    text += f"{BOT_TEXTS['margin']}{account_info.get('margin', 0):.2f} {account_info.get('currency', 'USD')}\n"
+    text += f"{BOT_TEXTS['free_margin']}{account_info.get('free_margin', 0):.2f} {account_info.get('currency', 'USD')}\n"
     
     profit = account_info.get('profit', 0)
     profit_emoji = '💚' if profit >= 0 else '❤️'
-    text += f"{PERSIAN_TEXTS['profit']}{profit_emoji} {profit:.2f} {account_info.get('currency', 'USD')}\n"
-    text += f"\n🔢 اهرم: {account_info.get('leverage', 0)}:1"
-    text += f"\n🖥️ سرور: {account_info.get('server', 'N/A')}"
+    text += f"{BOT_TEXTS['profit']}{profit_emoji} {profit:.2f} {account_info.get('currency', 'USD')}\n"
+    text += f"\n🔢 Leverage: {account_info.get('leverage', 0)}:1"
+    text += f"\n🖥️ Server: {account_info.get('server', 'N/A')}"
     
     return text
 
 def format_positions(positions: list) -> str:
-    """Format positions list in Persian"""
+    """Format positions list"""
     if not positions:
-        return PERSIAN_TEXTS['no_positions']
+        return BOT_TEXTS['no_positions']
     
-    text = f"{PERSIAN_TEXTS['positions']}\n\n"
+    text = f"{BOT_TEXTS['positions']}\n\n"
     for pos in positions:
         type_emoji = '🟢' if pos['type'] == 'BUY' else '🔴'
         profit_emoji = '💚' if pos['profit'] >= 0 else '❤️'
         
         text += f"{type_emoji} {pos['symbol']} {pos['type']}\n"
-        text += f"   🎫 تیکت: {pos['ticket']}\n"
-        text += f"   📊 حجم: {pos['volume']}\n"
-        text += f"   💰 قیمت باز: {pos['price_open']:.5f}\n"
-        text += f"   📈 قیمت فعلی: {pos['price_current']:.5f}\n"
-        text += f"   {profit_emoji} سود/زیان: {pos['profit']:.2f}\n"
+        text += f"   🎫 Ticket: {pos['ticket']}\n"
+        text += f"   📊 Volume: {pos['volume']}\n"
+        text += f"   💰 Open Price: {pos['price_open']:.5f}\n"
+        text += f"   📈 Current Price: {pos['price_current']:.5f}\n"
+        text += f"   {profit_emoji} Profit/Loss: {pos['profit']:.2f}\n"
         if pos.get('sl'):
             text += f"   🛑 Stop Loss: {pos['sl']:.5f}\n"
         if pos.get('tp'):
@@ -87,7 +87,7 @@ def format_positions(positions: list) -> str:
     return text
 
 def format_signal(signal: Dict, symbol: str) -> str:
-    """Format trading signal in Persian"""
+    """Format trading signal"""
     action_emoji = {
         'BUY': '🟢',
         'SELL': '🔴',
@@ -95,26 +95,26 @@ def format_signal(signal: Dict, symbol: str) -> str:
     }
     
     action_text = {
-        'BUY': PERSIAN_TEXTS['buy'],
-        'SELL': PERSIAN_TEXTS['sell'],
-        'HOLD': PERSIAN_TEXTS['hold']
+        'BUY': BOT_TEXTS['buy'],
+        'SELL': BOT_TEXTS['sell'],
+        'HOLD': BOT_TEXTS['hold']
     }
     
     emoji = action_emoji.get(signal.get('action', 'HOLD'), '⚪')
-    action = action_text.get(signal.get('action', 'HOLD'), PERSIAN_TEXTS['hold'])
+    action = action_text.get(signal.get('action', 'HOLD'), BOT_TEXTS['hold'])
     
-    text = f"{PERSIAN_TEXTS['signal']} {symbol}\n\n"
+    text = f"{BOT_TEXTS['signal']} {symbol}\n\n"
     text += f"{emoji} {action}\n"
-    text += f"📊 {PERSIAN_TEXTS['confidence']}{signal.get('confidence', 0):.1f}%\n"
-    text += f"💡 {PERSIAN_TEXTS['reason']}{signal.get('reason', 'N/A')}\n"
+    text += f"📊 {BOT_TEXTS['confidence']}{signal.get('confidence', 0):.1f}%\n"
+    text += f"💡 {BOT_TEXTS['reason']}{signal.get('reason', 'N/A')}\n"
     
     return text
 
 def format_analysis(analysis: str, indicators: Dict) -> str:
-    """Format AI analysis in Persian"""
-    text = "🤖 تحلیل هوش مصنوعی:\n\n"
+    """Format AI analysis"""
+    text = "🤖 AI Analysis:\n\n"
     text += analysis + "\n\n"
-    text += "📊 شاخص‌های فنی:\n"
+    text += "📊 Technical Indicators:\n"
     
     if indicators.get('rsi'):
         text += f"RSI: {indicators['rsi']:.2f}\n"
