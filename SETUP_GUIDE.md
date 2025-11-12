@@ -28,7 +28,7 @@ The Telegram bot has been created: **[@SweetTraderBot](https://t.me/SweetTraderB
 
 1. **Copy the bot token** (provided by BotFather)
    - ⚠️ **Keep this token secure!** Never commit it to git or share it publicly
-   - The token looks like: `8454476033:AAG3tOPNIzGWHsc7B5H5zgCQIR2o6JUPltU`
+   - The token format looks like: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`
 
 2. **Create your `.env` file**:
    ```bash
@@ -37,8 +37,9 @@ The Telegram bot has been created: **[@SweetTraderBot](https://t.me/SweetTraderB
 
 3. **Add the token to your `.env` file**:
    ```env
-   TELEGRAM_BOT_TOKEN=8454476033:AAG3tOPNIzGWHsc7B5H5zgCQIR2o6JUPltU
+   TELEGRAM_BOT_TOKEN=your_actual_token_here
    ```
+   ⚠️ **Important**: Replace `your_actual_token_here` with the actual token you received from BotFather
 
 4. **Optional: Customize your bot** (via @BotFather):
    - `/setdescription` - Set what your bot does
