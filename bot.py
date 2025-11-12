@@ -10,7 +10,7 @@ from n8n_handler import N8NHandler
 from ai_analyzer import AIAnalyzer
 from utils import (
     BOT_TEXTS, format_account_info, format_positions, 
-    format_signal, format_analysis
+    format_signal, format_analysis, check_authorization
 )
 
 # Configure logging
@@ -25,6 +25,10 @@ mt5 = MT5Handler(Config.MT5_LOGIN, Config.MT5_PASSWORD, Config.MT5_SERVER)
 n8n = N8NHandler(Config.N8N_WEBHOOK_URL) if Config.N8N_WEBHOOK_URL else None
 ai_analyzer = AIAnalyzer(Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else None
 
+# Authorization decorator
+authorized = check_authorization(Config.ALLOWED_USERNAME)
+
+@authorized
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command"""
     if not mt5.connected:
@@ -37,10 +41,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(BOT_TEXTS['welcome'])
 
+@authorized
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /help command"""
     await update.message.reply_text(BOT_TEXTS['help'])
 
+@authorized
 async def account(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /account command"""
     if not mt5.connected:
@@ -54,6 +60,7 @@ async def account(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(BOT_TEXTS['error'] + "Unable to retrieve account information.")
 
+@authorized
 async def balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /balance command"""
     if not mt5.connected:
@@ -68,6 +75,7 @@ async def balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(BOT_TEXTS['error'] + "Unable to retrieve balance.")
 
+@authorized
 async def positions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /positions command"""
     if not mt5.connected:
@@ -78,6 +86,7 @@ async def positions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     positions_list = mt5.get_positions()
     await update.message.reply_text(format_positions(positions_list))
 
+@authorized
 async def analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /analyze command"""
     if not mt5.connected:
@@ -144,6 +153,7 @@ async def analyze(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error in analyze command: {e}")
         await analyzing_msg.edit_text(BOT_TEXTS['error'] + str(e))
 
+@authorized
 async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /signal command"""
     if not mt5.connected:
@@ -201,6 +211,7 @@ async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error in signal command: {e}")
         await update.message.reply_text(BOT_TEXTS['error'] + str(e))
 
+@authorized
 async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /buy command"""
     if not mt5.connected:
@@ -236,6 +247,7 @@ async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
         error_msg = result.get('error', 'Unknown error') if result else 'Unknown error'
         await update.message.reply_text(f"{BOT_TEXTS['error']}{error_msg}")
 
+@authorized
 async def sell(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /sell command"""
     if not mt5.connected:
@@ -271,6 +283,7 @@ async def sell(update: Update, context: ContextTypes.DEFAULT_TYPE):
         error_msg = result.get('error', 'Unknown error') if result else 'Unknown error'
         await update.message.reply_text(f"{BOT_TEXTS['error']}{error_msg}")
 
+@authorized
 async def close_position(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /close command"""
     if not mt5.connected:

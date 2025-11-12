@@ -1,8 +1,11 @@
 """
 Utility functions for SweetTrader Bot
 """
-from typing import Dict, Any
+from typing import Dict, Any, Callable
 import logging
+from functools import wraps
+from telegram import Update
+from telegram.ext import ContextTypes
 
 logger = logging.getLogger(__name__)
 
@@ -124,4 +127,29 @@ def format_analysis(analysis: str, indicators: Dict) -> str:
         text += f"SMA 20: {indicators['sma_20']:.5f}\n"
     
     return text
+
+def check_authorization(allowed_username: str):
+    """Decorator to check if user is authorized to use the bot"""
+    def decorator(func: Callable):
+        @wraps(func)
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            # Get user information
+            user = update.effective_user
+            if not user:
+                await update.message.reply_text("❌ Unable to identify user.")
+                return
+            
+            # Check username (case-insensitive, with or without @)
+            user_username = (user.username or '').lower()
+            allowed = allowed_username.lower().lstrip('@')
+            
+            if user_username != allowed:
+                await update.message.reply_text("❌ Invalid user")
+                logger.warning(f"Unauthorized access attempt by @{user.username} (ID: {user.id})")
+                return
+            
+            # User is authorized, proceed with the command
+            return await func(update, context)
+        return wrapper
+    return decorator
 

@@ -26,6 +26,9 @@ class Config:
     # Admin
     ADMIN_USER_ID = int(os.getenv('ADMIN_USER_ID', '0'))
     
+    # Authorization
+    ALLOWED_USERNAME = os.getenv('ALLOWED_USERNAME', 'reyi_t')  # Default to reyi_t
+    
     # Trading Settings
     DEFAULT_SYMBOL = 'EURUSD'
     DEFAULT_VOLUME = 0.01
