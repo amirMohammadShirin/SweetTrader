@@ -118,8 +118,12 @@ class SignalGenerator:
             if total_signals == 0:
                 return None
             
-            if buy_signals > sell_signals and buy_signals >= 3:
+            # Lower threshold to 2 signals for more frequent signals
+            if buy_signals > sell_signals and buy_signals >= 2:
                 confidence = min(95, (buy_signals / total_signals) * 100)
+                # Boost confidence if we have 3+ signals
+                if buy_signals >= 3:
+                    confidence = min(95, confidence * 1.1)
                 return {
                     'symbol': symbol,
                     'action': 'BUY',
@@ -129,8 +133,11 @@ class SignalGenerator:
                     'stop_loss': round(current_price * 0.98, 5) if current_price else None,
                     'take_profit': round(current_price * 1.02, 5) if current_price else None,
                 }
-            elif sell_signals > buy_signals and sell_signals >= 3:
+            elif sell_signals > buy_signals and sell_signals >= 2:
                 confidence = min(95, (sell_signals / total_signals) * 100)
+                # Boost confidence if we have 3+ signals
+                if sell_signals >= 3:
+                    confidence = min(95, confidence * 1.1)
                 return {
                     'symbol': symbol,
                     'action': 'SELL',

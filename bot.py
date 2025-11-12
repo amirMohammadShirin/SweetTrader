@@ -72,34 +72,62 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def check_and_send_signals(application: Application):
     """Periodically check for trading signals and send to users"""
+    await asyncio.sleep(10)  # Wait 10 seconds after bot starts
+    
     while True:
         try:
-            await asyncio.sleep(300)  # Check every 5 minutes
+            logger.info("=" * 50)
+            logger.info("Starting signal check cycle...")
             
             if not mt5 or not mt5.connected:
-                logger.warning("MT5 not connected, skipping signal check")
+                logger.warning("⚠️ MT5 not connected - Cannot generate signals without market data")
+                logger.warning("Please ensure:")
+                logger.warning("1. MT5 terminal is installed and running")
+                logger.warning("2. MT5 credentials are correct in .env file")
+                logger.warning("3. MT5 package is installed (pip install MetaTrader5)")
+                logger.warning("Note: MT5 package typically requires Windows. On macOS, use a VPS or Windows VM.")
+                logger.info("Waiting 5 minutes before next check...")
+                await asyncio.sleep(300)  # Check every 5 minutes
                 continue
             
             if not user_chat_ids:
                 logger.info("No users registered, skipping signal check")
+                logger.info("Waiting 5 minutes before next check...")
+                await asyncio.sleep(300)
                 continue
             
-            logger.info(f"Checking for signals... ({len(user_chat_ids)} users)")
+            logger.info(f"Checking for signals... ({len(user_chat_ids)} users registered)")
+            logger.info(f"Monitoring symbols: {', '.join(MONITORED_SYMBOLS)}")
             
+            signals_found = 0
             for symbol in MONITORED_SYMBOLS:
                 try:
+                    logger.info(f"Processing {symbol}...")
+                    
                     # Get market data
                     symbol_info = mt5.get_symbol_info(symbol)
                     if not symbol_info:
+                        logger.warning(f"Symbol {symbol} not found")
                         continue
+                    
+                    logger.info(f"{symbol} - Bid: {symbol_info.get('bid')}, Ask: {symbol_info.get('ask')}")
                     
                     # Get historical data
                     rates = mt5.get_rates(symbol, count=100)
                     if rates is None or len(rates) == 0:
+                        logger.warning(f"No price data for {symbol}")
                         continue
+                    
+                    logger.info(f"{symbol} - Got {len(rates)} candles of historical data")
                     
                     # Calculate indicators
                     indicators = signal_generator.calculate_indicators(rates)
+                    
+                    if not indicators:
+                        logger.warning(f"Could not calculate indicators for {symbol}")
+                        continue
+                    
+                    logger.info(f"{symbol} - RSI: {indicators.get('rsi')}, MACD: {indicators.get('macd')}")
                     
                     # Get market data
                     market_data = {
@@ -112,32 +140,45 @@ async def check_and_send_signals(application: Application):
                     # Generate signal
                     signal = signal_generator.generate_signal(symbol, indicators, market_data)
                     
-                    if signal and signal['confidence'] >= 70:  # Only send high-confidence signals
-                        message = signal_generator.format_signal_message(signal)
+                    if signal:
+                        logger.info(f"{symbol} - Signal generated: {signal['action']} with {signal['confidence']}% confidence")
                         
-                        # Send to all registered users
-                        for chat_id in user_chat_ids.copy():
-                            try:
-                                await application.bot.send_message(
-                                    chat_id=chat_id,
-                                    text=message,
-                                    parse_mode='Markdown'
-                                )
-                                logger.info(f"Sent {signal['action']} signal for {symbol} to user {chat_id}")
-                            except Exception as e:
-                                logger.error(f"Error sending message to {chat_id}: {e}")
-                                # Remove invalid chat IDs
-                                user_chat_ids.discard(chat_id)
-                        
-                        # Wait a bit between signals
-                        await asyncio.sleep(2)
+                        if signal['confidence'] >= 60:  # Lowered threshold from 70 to 60 for testing
+                            message = signal_generator.format_signal_message(signal)
+                            
+                            # Send to all registered users
+                            for chat_id in user_chat_ids.copy():
+                                try:
+                                    await application.bot.send_message(
+                                        chat_id=chat_id,
+                                        text=message,
+                                        parse_mode='Markdown'
+                                    )
+                                    logger.info(f"✅ Sent {signal['action']} signal for {symbol} to user {chat_id}")
+                                    signals_found += 1
+                                except Exception as e:
+                                    logger.error(f"Error sending message to {chat_id}: {e}")
+                                    # Remove invalid chat IDs
+                                    user_chat_ids.discard(chat_id)
+                            
+                            # Wait a bit between signals
+                            await asyncio.sleep(2)
+                        else:
+                            logger.info(f"{symbol} - Signal confidence {signal['confidence']}% below threshold (60%)")
+                    else:
+                        logger.info(f"{symbol} - No signal generated")
                 
                 except Exception as e:
-                    logger.error(f"Error processing {symbol}: {e}")
+                    logger.error(f"Error processing {symbol}: {e}", exc_info=True)
                     continue
+            
+            logger.info(f"Signal check complete. Found {signals_found} signals to send.")
+            logger.info("Waiting 5 minutes before next check...")
+            logger.info("=" * 50)
+            await asyncio.sleep(300)  # Check every 5 minutes
         
         except Exception as e:
-            logger.error(f"Error in signal checking loop: {e}")
+            logger.error(f"Error in signal checking loop: {e}", exc_info=True)
             await asyncio.sleep(60)  # Wait 1 minute on error
 
 async def post_init(application: Application):
