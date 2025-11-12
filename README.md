@@ -1,22 +1,21 @@
-# SweetTrader Advisor Bot 🤖📈
+# SweetTrader Signal Bot 🤖📈
 
-A Telegram bot that provides reliable trading advice for MetaTrader5, including technical analysis, trading planning, and financial management advice.
+A Telegram bot that automatically sends reliable trading signals for MetaTrader5.
 
 ## Features ✨
 
-- 📊 **Technical Analysis**: RSI, MACD, Moving Averages, Bollinger Bands
-- 📋 **Trading Planning**: Risk management, position sizing, margin advice
-- 💵 **Financial Advice**: Capital management, trading psychology
-- 🤖 **AI-Powered Insights**: OpenAI integration for comprehensive advice
+- 🔔 **Automatic Signals**: Automatically sends trading signals when strong opportunities are detected
+- 📊 **Technical Analysis**: Uses RSI, MACD, Moving Averages, and Bollinger Bands
+- 🎯 **High Confidence**: Only sends signals with 70%+ confidence
 - 🔐 **Secure Access**: Restricted to authorized users only
 - 🔗 **MT5 Integration**: Real-time market data from MetaTrader5
+- 📱 **Multiple Symbols**: Monitors EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD
 
 ## Requirements 📋
 
 - Python 3.8 or higher
 - MetaTrader5 account (for market data)
 - Telegram Bot Token
-- (Optional) OpenAI API Key for AI advice
 
 ## Installation 🚀
 
@@ -52,11 +51,8 @@ MT5_LOGIN=12345678
 MT5_PASSWORD=your_password
 MT5_SERVER=YourBroker-Demo
 
-# OpenAI Configuration (Optional)
-OPENAI_API_KEY=sk-your-openai-api-key
-
-# Authorization
-ALLOWED_USERNAME=reyi_t
+# Authorization (comma-separated)
+ALLOWED_USERNAMES=reyi_t,sweetamirmohamad
 ```
 
 ### 5. Run the bot
@@ -65,83 +61,69 @@ ALLOWED_USERNAME=reyi_t
 python bot.py
 ```
 
-## Available Commands 📝
+## Usage 💡
 
-| Command | Description | Example |
-|---------|-------------|---------|
-| `/start` | Start the bot | `/start` |
-| `/help` | Show help guide | `/help` |
-| `/account` | Account information | `/account` |
-| `/advice <SYMBOL>` | Comprehensive trading advice | `/advice EURUSD` |
-| `/technical <SYMBOL>` | Technical analysis only | `/technical GBPUSD` |
-| `/planning` | Trading plan advice | `/planning` |
-| `/financial` | Financial management advice | `/financial` |
+### Start the Bot
 
-## Usage Examples 💡
+1. Open Telegram and find your bot
+2. Send `/start` command
+3. The bot will automatically start monitoring markets
+4. You will receive signals automatically when strong trading opportunities are detected
 
-### Get Comprehensive Advice
+### Signal Format
+
+When a signal is detected, you'll receive a message like:
 
 ```
-/advice EURUSD
+🟢 TRADING SIGNAL 🟢
+
+📊 Symbol: EURUSD
+🎯 Action: BUY
+💰 Price: 1.08500
+📈 Confidence: 85%
+
+🛑 Stop Loss: 1.06330
+🎯 Take Profit: 1.10670
+
+📋 Reasons:
+• RSI oversold (<30)
+• MACD bullish crossover
+• Price above SMA 20
+
+⚠️ Always use proper risk management!
 ```
 
-This provides:
-- AI-powered analysis (if OpenAI configured)
-- Technical indicators
-- Trading signals
-- Risk management tips
+## How It Works 🔧
 
-### Get Technical Analysis
+1. **Monitoring**: Bot checks major currency pairs every 5 minutes
+2. **Analysis**: Calculates technical indicators (RSI, MACD, Moving Averages, Bollinger Bands)
+3. **Signal Generation**: Generates signals based on multiple indicator confirmations
+4. **Filtering**: Only sends signals with 70%+ confidence
+5. **Delivery**: Automatically sends signals to all registered users
 
-```
-/technical GBPUSD
-```
+## Signal Criteria 📊
 
-Shows:
-- RSI levels
-- MACD signals
-- Moving average trends
-- Bollinger Bands
-
-### Get Planning Advice
-
-```
-/planning
-```
-
-Provides:
-- Risk management guidelines
-- Position sizing recommendations
-- Margin level warnings
-- Leverage advice
-
-### Get Financial Advice
-
-```
-/financial
-```
-
-Includes:
-- Account health assessment
-- Capital management tips
-- Trading psychology advice
-- Profit/loss analysis
+Signals are generated when:
+- Multiple technical indicators align
+- Confidence level is 70% or higher
+- Strong buy/sell signals detected (3+ confirmations)
 
 ## Security 🔒
 
-- Only authorized users can use the bot (configured via `ALLOWED_USERNAME`)
+- Only authorized users can use the bot
 - Credentials stored securely in `.env` file
-- No trading execution - advice only
+- No trading execution - signals only
 
 ## Disclaimer ⚠️
 
-**This bot provides trading advice only. It does NOT execute trades.**
+**This bot provides trading signals only. It does NOT execute trades.**
 
 - Trading involves risk
 - Always use proper risk management
-- Test strategies on demo accounts first
+- Use stop losses on all trades
 - Never risk more than you can afford to lose
 - Past performance doesn't guarantee future results
+- Test signals on demo accounts first
 
 ## Support 💬
 
