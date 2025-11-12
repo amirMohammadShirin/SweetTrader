@@ -1,13 +1,14 @@
 """
-SweetTrader Bot - Trading Advisor
-A bot that provides reliable trading advice for MetaTrader5
+SweetTrader Bot - Automatic Trading Signals
+A bot that automatically sends reliable trading signals
 """
 import logging
+import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from config import Config
 from mt5_handler import MT5Handler
-from advisor import TradingAdvisor
+from signal_generator import SignalGenerator
 from utils import check_authorization
 
 # Configure logging
@@ -19,10 +20,16 @@ logger = logging.getLogger(__name__)
 
 # Initialize handlers
 mt5 = None
-advisor = TradingAdvisor(Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else TradingAdvisor()
+signal_generator = SignalGenerator()
+
+# Store user chat IDs for sending signals
+user_chat_ids = set()
 
 # Authorization decorator
 authorized = check_authorization(Config.ALLOWED_USERNAMES)
+
+# Symbols to monitor
+MONITORED_SYMBOLS = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']
 
 def initialize_mt5():
     """Initialize MT5 handler if credentials are available"""
@@ -42,190 +49,101 @@ initialize_mt5()
 @authorized
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command"""
+    user = update.effective_user
+    chat_id = update.effective_chat.id
+    
+    # Store user chat ID for sending signals
+    user_chat_ids.add(chat_id)
+    logger.info(f"User @{user.username} (ID: {chat_id}) started the bot")
+    
     welcome_msg = (
-        "👋 Welcome to SweetTrader Advisor Bot! 🚀\n\n"
-        "I provide reliable trading advice including:\n"
-        "• 📊 Technical analysis\n"
-        "• 📋 Trading planning\n"
-        "• 💵 Financial management\n\n"
-        "Use /help to see all available commands."
+        "👋 Welcome to SweetTrader Signal Bot! 🚀\n\n"
+        "I will automatically send you reliable trading signals for better trading opportunities.\n\n"
+        "📊 Monitoring major currency pairs:\n"
+        "• EURUSD\n"
+        "• GBPUSD\n"
+        "• USDJPY\n"
+        "• AUDUSD\n"
+        "• USDCAD\n\n"
+        "🔔 You will receive signals automatically when strong trading opportunities are detected.\n\n"
+        "⚠️ Always use proper risk management and stop losses!"
     )
     await update.message.reply_text(welcome_msg)
 
-@authorized
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /help command"""
-    help_text = (
-        "📖 Available Commands:\n\n"
-        "/start - Start the bot\n"
-        "/help - Show this help\n"
-        "/account - Account information\n"
-        "/advice <SYMBOL> - Get comprehensive trading advice\n"
-        "/technical <SYMBOL> - Get technical analysis\n"
-        "/planning - Get trading plan advice\n"
-        "/financial - Get financial management advice\n\n"
-        "Example: /advice EURUSD"
-    )
-    await update.message.reply_text(help_text)
+async def check_and_send_signals(application: Application):
+    """Periodically check for trading signals and send to users"""
+    while True:
+        try:
+            await asyncio.sleep(300)  # Check every 5 minutes
+            
+            if not mt5 or not mt5.connected:
+                logger.warning("MT5 not connected, skipping signal check")
+                continue
+            
+            if not user_chat_ids:
+                logger.info("No users registered, skipping signal check")
+                continue
+            
+            logger.info(f"Checking for signals... ({len(user_chat_ids)} users)")
+            
+            for symbol in MONITORED_SYMBOLS:
+                try:
+                    # Get market data
+                    symbol_info = mt5.get_symbol_info(symbol)
+                    if not symbol_info:
+                        continue
+                    
+                    # Get historical data
+                    rates = mt5.get_rates(symbol, count=100)
+                    if rates is None or len(rates) == 0:
+                        continue
+                    
+                    # Calculate indicators
+                    indicators = signal_generator.calculate_indicators(rates)
+                    
+                    # Get market data
+                    market_data = {
+                        'current_price': symbol_info.get('bid', 0),
+                        'bid': symbol_info.get('bid', 0),
+                        'ask': symbol_info.get('ask', 0),
+                        'spread': symbol_info.get('spread', 0),
+                    }
+                    
+                    # Generate signal
+                    signal = signal_generator.generate_signal(symbol, indicators, market_data)
+                    
+                    if signal and signal['confidence'] >= 70:  # Only send high-confidence signals
+                        message = signal_generator.format_signal_message(signal)
+                        
+                        # Send to all registered users
+                        for chat_id in user_chat_ids.copy():
+                            try:
+                                await application.bot.send_message(
+                                    chat_id=chat_id,
+                                    text=message,
+                                    parse_mode='Markdown'
+                                )
+                                logger.info(f"Sent {signal['action']} signal for {symbol} to user {chat_id}")
+                            except Exception as e:
+                                logger.error(f"Error sending message to {chat_id}: {e}")
+                                # Remove invalid chat IDs
+                                user_chat_ids.discard(chat_id)
+                        
+                        # Wait a bit between signals
+                        await asyncio.sleep(2)
+                
+                except Exception as e:
+                    logger.error(f"Error processing {symbol}: {e}")
+                    continue
+        
+        except Exception as e:
+            logger.error(f"Error in signal checking loop: {e}")
+            await asyncio.sleep(60)  # Wait 1 minute on error
 
-@authorized
-async def account(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /account command"""
-    if not mt5 or not mt5.connected:
-        await update.message.reply_text(
-            "❌ MT5 is not connected.\n"
-            "Please configure MT5 credentials in .env file."
-        )
-        return
-    
-    account_info = mt5.get_account_info()
-    if account_info:
-        msg = (
-            f"📊 Account Information:\n\n"
-            f"Account: {account_info.get('login')}\n"
-            f"Balance: {account_info.get('balance', 0):.2f} {account_info.get('currency', 'USD')}\n"
-            f"Equity: {account_info.get('equity', 0):.2f} {account_info.get('currency', 'USD')}\n"
-            f"Margin: {account_info.get('margin', 0):.2f} {account_info.get('currency', 'USD')}\n"
-            f"Free Margin: {account_info.get('free_margin', 0):.2f} {account_info.get('currency', 'USD')}\n"
-            f"Margin Level: {account_info.get('margin_level', 0):.2f}%\n"
-            f"Profit/Loss: {account_info.get('profit', 0):.2f} {account_info.get('currency', 'USD')}\n"
-            f"Leverage: {account_info.get('leverage', 0)}:1\n"
-            f"Server: {account_info.get('server', 'N/A')}"
-        )
-        await update.message.reply_text(msg)
-    else:
-        await update.message.reply_text("❌ Unable to retrieve account information.")
-
-@authorized
-async def advice(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /advice command - Comprehensive advice"""
-    if not context.args or len(context.args) < 1:
-        await update.message.reply_text("❌ Please enter a symbol. Example: /advice EURUSD")
-        return
-    
-    if not mt5 or not mt5.connected:
-        await update.message.reply_text("❌ MT5 is not connected.")
-        return
-    
-    symbol = context.args[0].upper()
-    analyzing_msg = await update.message.reply_text(f"🔍 Analyzing {symbol}...")
-    
-    try:
-        # Get market data
-        symbol_info = mt5.get_symbol_info(symbol)
-        if not symbol_info:
-            await analyzing_msg.edit_text(f"❌ Symbol {symbol} not found.")
-            return
-        
-        # Get historical data
-        rates = mt5.get_rates(symbol, count=100)
-        if rates is None or len(rates) == 0:
-            await analyzing_msg.edit_text(f"❌ Unable to retrieve price data for {symbol}.")
-            return
-        
-        # Calculate indicators
-        indicators = advisor.calculate_technical_indicators(rates)
-        
-        # Get account info
-        account_info = mt5.get_account_info() or {}
-        
-        # Get market data
-        market_data = {
-            'current_price': symbol_info.get('bid', 0),
-            'bid': symbol_info.get('bid', 0),
-            'ask': symbol_info.get('ask', 0),
-            'spread': symbol_info.get('spread', 0),
-        }
-        
-        # Get AI advice if available
-        ai_advice = advisor.get_ai_advice(symbol, indicators, market_data, account_info)
-        
-        # Build response
-        response = f"🤖 Trading Advice for {symbol}\n\n"
-        response += "=" * 30 + "\n\n"
-        
-        if ai_advice:
-            response += f"{ai_advice}\n\n"
-            response += "=" * 30 + "\n\n"
-        
-        # Add technical analysis
-        response += advisor.get_technical_advice(symbol, indicators, market_data)
-        
-        await analyzing_msg.edit_text(response)
-        
-    except Exception as e:
-        logger.error(f"Error in advice command: {e}")
-        await analyzing_msg.edit_text(f"❌ Error: {str(e)}")
-
-@authorized
-async def technical(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /technical command"""
-    if not context.args or len(context.args) < 1:
-        await update.message.reply_text("❌ Please enter a symbol. Example: /technical EURUSD")
-        return
-    
-    if not mt5 or not mt5.connected:
-        await update.message.reply_text("❌ MT5 is not connected.")
-        return
-    
-    symbol = context.args[0].upper()
-    analyzing_msg = await update.message.reply_text(f"🔍 Analyzing {symbol}...")
-    
-    try:
-        symbol_info = mt5.get_symbol_info(symbol)
-        if not symbol_info:
-            await analyzing_msg.edit_text(f"❌ Symbol {symbol} not found.")
-            return
-        
-        rates = mt5.get_rates(symbol, count=100)
-        if rates is None or len(rates) == 0:
-            await analyzing_msg.edit_text(f"❌ Unable to retrieve price data for {symbol}.")
-            return
-        
-        indicators = advisor.calculate_technical_indicators(rates)
-        market_data = {
-            'current_price': symbol_info.get('bid', 0),
-            'bid': symbol_info.get('bid', 0),
-            'ask': symbol_info.get('ask', 0),
-            'spread': symbol_info.get('spread', 0),
-        }
-        
-        advice = advisor.get_technical_advice(symbol, indicators, market_data)
-        await analyzing_msg.edit_text(advice)
-        
-    except Exception as e:
-        logger.error(f"Error in technical command: {e}")
-        await analyzing_msg.edit_text(f"❌ Error: {str(e)}")
-
-@authorized
-async def planning(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /planning command"""
-    if not mt5 or not mt5.connected:
-        await update.message.reply_text("❌ MT5 is not connected.")
-        return
-    
-    account_info = mt5.get_account_info()
-    if not account_info:
-        await update.message.reply_text("❌ Unable to retrieve account information.")
-        return
-    
-    advice = advisor.get_planning_advice(account_info)
-    await update.message.reply_text(advice)
-
-@authorized
-async def financial(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /financial command"""
-    if not mt5 or not mt5.connected:
-        await update.message.reply_text("❌ MT5 is not connected.")
-        return
-    
-    account_info = mt5.get_account_info()
-    if not account_info:
-        await update.message.reply_text("❌ Unable to retrieve account information.")
-        return
-    
-    advice = advisor.get_financial_advice(account_info)
-    await update.message.reply_text(advice)
+async def post_init(application: Application):
+    """Start signal checking after bot initialization"""
+    asyncio.create_task(check_and_send_signals(application))
+    logger.info("Signal checking task started")
 
 def main():
     """Main function to run the bot"""
@@ -235,19 +153,15 @@ def main():
         return
     
     # Create application
-    application = Application.builder().token(Config.TELEGRAM_BOT_TOKEN).build()
+    application = Application.builder().token(Config.TELEGRAM_BOT_TOKEN).post_init(post_init).build()
     
     # Register command handlers
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("account", account))
-    application.add_handler(CommandHandler("advice", advice))
-    application.add_handler(CommandHandler("technical", technical))
-    application.add_handler(CommandHandler("planning", planning))
-    application.add_handler(CommandHandler("financial", financial))
     
     # Start the bot
-    logger.info("Starting SweetTrader Advisor Bot...")
+    logger.info("Starting SweetTrader Signal Bot...")
+    logger.info("Signal checking will start automatically after bot initialization...")
+    
     application.run_polling(allowed_updates=Update.ALL_TYPES)
     
     # Cleanup
