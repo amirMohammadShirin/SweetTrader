@@ -1,7 +1,13 @@
 """
 MetaTrader5 Integration Handler - Read-only for market data
 """
-import MetaTrader5 as mt5
+try:
+    import MetaTrader5 as mt5
+    MT5_AVAILABLE = True
+except ImportError:
+    MT5_AVAILABLE = False
+    mt5 = None
+
 import pandas as pd
 from typing import Optional, Dict
 import logging
@@ -19,6 +25,10 @@ class MT5Handler:
     
     def connect(self) -> bool:
         """Connect to MetaTrader5"""
+        if not MT5_AVAILABLE:
+            logger.warning("MetaTrader5 package not available (typically only on Windows)")
+            return False
+        
         try:
             if not mt5.initialize():
                 logger.error(f"MT5 initialization failed: {mt5.last_error()}")
@@ -92,9 +102,14 @@ class MT5Handler:
             logger.error(f"Error getting symbol info: {e}")
             return None
     
-    def get_rates(self, symbol: str, timeframe=mt5.TIMEFRAME_H1, count: int = 100) -> Optional[pd.DataFrame]:
+    def get_rates(self, symbol: str, timeframe=None, count: int = 100) -> Optional[pd.DataFrame]:
         """Get historical rates"""
-        if not self.connected:
+        if not self.connected or not MT5_AVAILABLE:
+            return None
+        
+        if timeframe is None and MT5_AVAILABLE:
+            timeframe = mt5.TIMEFRAME_H1
+        elif timeframe is None:
             return None
         
         try:

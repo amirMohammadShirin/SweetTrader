@@ -9,7 +9,7 @@ from telegram.ext import ContextTypes
 
 logger = logging.getLogger(__name__)
 
-def check_authorization(allowed_username: str):
+def check_authorization(allowed_usernames: list):
     """Decorator to check if user is authorized to use the bot"""
     def decorator(func: Callable):
         @wraps(func)
@@ -20,9 +20,8 @@ def check_authorization(allowed_username: str):
                 return
             
             user_username = (user.username or '').lower()
-            allowed = allowed_username.lower().lstrip('@')
             
-            if user_username != allowed:
+            if user_username not in allowed_usernames:
                 await update.message.reply_text("❌ Invalid user")
                 logger.warning(f"Unauthorized access attempt by @{user.username} (ID: {user.id})")
                 return

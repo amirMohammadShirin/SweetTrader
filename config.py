@@ -20,8 +20,9 @@ class Config:
     # OpenAI (for AI advice)
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
     
-    # Authorization
-    ALLOWED_USERNAME = os.getenv('ALLOWED_USERNAME', 'reyi_t')
+    # Authorization - comma-separated list of allowed usernames
+    ALLOWED_USERNAMES = os.getenv('ALLOWED_USERNAMES', 'reyi_t,sweetamirmohamad').split(',')
+    ALLOWED_USERNAMES = [u.strip().lower().lstrip('@') for u in ALLOWED_USERNAMES]
     
     @classmethod
     def validate(cls):

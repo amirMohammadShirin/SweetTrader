@@ -22,7 +22,7 @@ mt5 = None
 advisor = TradingAdvisor(Config.OPENAI_API_KEY) if Config.OPENAI_API_KEY else TradingAdvisor()
 
 # Authorization decorator
-authorized = check_authorization(Config.ALLOWED_USERNAME)
+authorized = check_authorization(Config.ALLOWED_USERNAMES)
 
 def initialize_mt5():
     """Initialize MT5 handler if credentials are available"""
